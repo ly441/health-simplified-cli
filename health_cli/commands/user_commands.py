@@ -1,6 +1,6 @@
 import typer
 from sqlalchemy.exc import IntegrityError
-from health_cli.database import SessionLocal
+from db.database import SessionLocal
 from health_cli.models.users_entry import User
 
 app = typer.Typer()

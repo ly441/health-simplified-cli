@@ -3,7 +3,7 @@ from typing import Optional
 from datetime import date
 from sqlalchemy.orm import Session
 from ..models import Goal, User
-from ..database import get_db
+from ...db.database import get_db
 
 app = typer.Typer()
 

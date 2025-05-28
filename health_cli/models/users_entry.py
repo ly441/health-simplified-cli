@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship
-from database import Base
+from db.database import Base
 
 class User(Base):
     __tablename__ = 'users'
@@ -40,4 +40,4 @@ class MealPlan(Base):
     sunday = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="meal_plans")
-    
+

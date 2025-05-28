@@ -3,7 +3,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from ..models import FoodEntry, Goal, User
-from ..database import get_db
+from ...db.database import get_db
 
 app = typer.Typer()
 
@@ -41,4 +41,3 @@ def report(user: str, report_date: date):
             typer.echo(typer.style("You're on track!", fg=typer.colors.GREEN))
     else:
         typer.echo("No daily goal set. Use 'goal set' to set targets.")
-        
