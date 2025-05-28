@@ -2,8 +2,8 @@ import typer
 from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from ..models import FoodEntry, Goal, User
-from ...db.database import get_db
+from health_cli.models import FoodEntry, Goal, User
+from db.database import get_db
 
 app = typer.Typer()
 

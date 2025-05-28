@@ -1,66 +1,129 @@
+
 import typer
-from typing import Optional
+from typing import Optional, List
 from sqlalchemy.orm import Session
 from ..models import MealPlan, User
-from ...db.database import get_db
+from db.database import get_db
 
-app = typer.Typer()
+app = typer.Typer(help="Manage your weekly meal plans")
 
-@app.command()
-def plan_meal(user: str, week: int):
-    """Create or update a weekly meal plan"""
-    db: Session = next(get_db())
-    
-    user_obj = db.query(User).filter(User.name == user).first()
-    if not user_obj:
-        typer.echo(f"User {user} not found")
+# Constants
+DAYS_OF_WEEK: List[str] = [
+    "monday", "tuesday", "wednesday", 
+    "thursday", "friday", "saturday", "sunday"
+]
+
+def get_user(db: Session, username: str) -> User:
+    """Helper function to get user with error handling"""
+    user = db.query(User).filter(User.name == username).first()
+    if not user:
+        typer.echo(f"Error: User '{username}' not found")
         raise typer.Exit(code=1)
-    
-    # Check if plan exists for this week
-    plan = db.query(MealPlan).filter(
-        MealPlan.user_id == user_obj.id,
+    return user
+
+def get_meal_plan(db: Session, user_id: int, week: int) -> Optional[MealPlan]:
+    """Get existing meal plan or return None"""
+    return db.query(MealPlan).filter(
+        MealPlan.user_id == user_id,
         MealPlan.week_number == week
     ).first()
-    
-    if not plan:
-        plan = MealPlan(user_id=user_obj.id, week_number=week)
-        db.add(plan)
-        db.commit()
-        typer.echo(f"Created new meal plan for week {week}")
-    else:
-        typer.echo(f"Updating existing meal plan for week {week}")
-    
-    # Interactive editing
-    days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
-    for day in days:
-        current = getattr(plan, day)
-        new_value = typer.prompt(
-            f"{day.capitalize()} meal plan",
-            default=current if current else "",
-            show_default=True
-        )
-        setattr(plan, day, new_value)
-    
-    db.commit()
-    typer.echo("Meal plan saved successfully!")
 
-@app.command()
-def update(id: int, day: Optional[str] = None, meal: Optional[str] = None):
-    """Update a specific day in a meal plan"""
+@app.command(name="create")
+def plan_meal(
+    user: str = typer.Argument(..., help="Username"),
+    week: int = typer.Argument(..., help="Week number (1-52)", min=1, max=52)
+):
+    """
+    Create or update a weekly meal plan interactively
+    """
     db: Session = next(get_db())
     
-    plan = db.query(MealPlan).filter(MealPlan.id == id).first()
-    if not plan:
-        typer.echo(f"Meal plan with ID {id} not found")
-        raise typer.Exit(code=1)
-    
-    if day and meal:
-        if not hasattr(plan, day):
-            typer.echo(f"Invalid day: {day}")
-            raise typer.Exit(code=1)
-        setattr(plan, day, meal)
+    try:
+        user_obj = get_user(db, user)
+        plan = get_meal_plan(db, user_obj.id, week)
+        
+        if not plan:
+            plan = MealPlan(user_id=user_obj.id, week_number=week)
+            db.add(plan)
+            db.commit()
+            typer.echo(f"Created new meal plan for week {week}")
+        else:
+            typer.echo(f"Updating existing meal plan for week {week}")
+        
+        # Interactive editing with validation
+        for day in DAYS_OF_WEEK:
+            current_value = getattr(plan, day, "")
+            new_value = typer.prompt(
+                f"{day.capitalize()} meals",
+                default=current_value if current_value else "Not specified",
+                show_default=True
+            )
+            setattr(plan, day, new_value.strip())
+        
         db.commit()
-        typer.echo(f"Updated {day} in week {plan.week_number}'s meal plan")
-    else:
-        typer.echo("Please provide both --day and --meal parameters")
-        raise typer.Exit(code=1)    
+        typer.echo(typer.style(
+            f"✅ Meal plan for week {week} saved successfully!",
+            fg=typer.colors.GREEN
+        ))
+        
+    except Exception as e:
+        db.rollback()
+        typer.echo(typer.style(
+            f"❌ Error saving meal plan: {str(e)}",
+            fg=typer.colors.RED
+        ))
+        raise typer.Exit(code=1)
+
+@app.command(name="update")
+def update_meal_day(
+    plan_id: int = typer.Argument(..., help="Meal plan ID to update"),
+    day: str = typer.Argument(
+        ..., 
+        help="Day of week to update",
+        autocompletion=lambda: DAYS_OF_WEEK
+    ),
+    meal: str = typer.Argument(..., help="New meal description")
+):
+    """
+    Update a specific day in a meal plan
+    """
+    db: Session = next(get_db())
+    
+    try:
+        # Validate day input
+        day = day.lower()
+        if day not in DAYS_OF_WEEK:
+            typer.echo(typer.style(
+                f"Error: '{day}' is not a valid day. Use one of: {', '.join(DAYS_OF_WEEK)}",
+                fg=typer.colors.RED
+            ))
+            raise typer.Exit(code=1)
+        
+        # Get and validate meal plan
+        plan = db.query(MealPlan).get(plan_id)
+        if not plan:
+            typer.echo(typer.style(
+                f"Error: Meal plan with ID {plan_id} not found",
+                fg=typer.colors.RED
+            ))
+            raise typer.Exit(code=1)
+        
+        # Update the plan
+        setattr(plan, day, meal.strip())
+        db.commit()
+        
+        typer.echo(typer.style(
+            f"✅ Updated {day.capitalize()} in week {plan.week_number}'s meal plan",
+            fg=typer.colors.GREEN
+        ))
+        
+    except Exception as e:
+        db.rollback()
+        typer.echo(typer.style(
+            f"❌ Error updating meal plan: {str(e)}",
+            fg=typer.colors.RED
+        ))
+        raise typer.Exit(code=1)
+
+if __name__ == "__main__":
+    app()

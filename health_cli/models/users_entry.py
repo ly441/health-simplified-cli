@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
-from sqlalchemy.orm import relationship
+
 from db.database import Base
+from sqlalchemy.orm import relationship, Session
 
 class User(Base):
     __tablename__ = 'users'
@@ -10,34 +11,38 @@ class User(Base):
     goals = relationship("Goal", back_populates="user", uselist=False)
     meal_plans = relationship("MealPlan", back_populates="user")
 
-class FoodEntry(Base):
-    __tablename__ = 'food_entries'
-    id = Column(Integer, primary_key=True)
-    food = Column(String, nullable=False)
-    calories = Column(Integer, nullable=False)
-    date = Column(Date, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="food_entries")
 
-class Goal(Base):
-    __tablename__ = 'goals'
-    id = Column(Integer, primary_key=True)
-    daily_calories = Column(Integer)
-    weekly_calories = Column(Integer)
-    user_id = Column(Integer, ForeignKey('users.id'), unique=True)
-    user = relationship("User", back_populates="goals")
+# CREATE
+def create_user(db: Session, name: str):
+    user = User(name=name)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
 
-class MealPlan(Base):
-    __tablename__ = 'meal_plans'
-    id = Column(Integer, primary_key=True)
-    week_number = Column(Integer, nullable=False)
-    monday = Column(String)
-    tuesday = Column(String)
-    wednesday = Column(String)
-    thursday = Column(String)
-    friday = Column(String)
-    saturday = Column(String)
-    sunday = Column(String)
-    user_id = Column(Integer, ForeignKey('users.id'))
-    user = relationship("User", back_populates="meal_plans")
+# READ
+def get_user_by_id(db: Session, user_id: int):
+    return db.query(User).filter(User.id == user_id).first()
 
+def get_user_by_name(db: Session, name: str):
+    return db.query(User).filter(User.name == name).first()
+
+def get_all_users(db: Session):
+    return db.query(User).all()
+
+# UPDATE
+def update_user_name(db: Session, user_id: int, new_name: str):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        user.name = new_name
+        db.commit()
+        db.refresh(user)
+    return user
+
+# DELETE
+def delete_user(db: Session, user_id: int):
+    user = db.query(User).filter(User.id == user_id).first()
+    if user:
+        db.delete(user)
+        db.commit()
+    return user

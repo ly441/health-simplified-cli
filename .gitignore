@@ -1,28 +1,25 @@
 
-# Environment variable files
+
 .env
 .env.*
 
-# Python bytecode and cache
 __pycache__/
 *.pyc
 *.pyo
 
-# Virtual environment folders
+
 venv/
 env/
 
-# pytest cache
+
 .pytest_cache/
 
-# Coverage reports (if using coverage.py)
+
 .coverage
 htmlcov/
 
-# Editor/IDE settings
 .vscode/
 .idea/
 
-# OS-generated files
 .DS_Store
 Thumbs.db

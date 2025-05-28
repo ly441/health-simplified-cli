@@ -1,0 +1,3 @@
+typer
+sqlalchemy
+python-dotenv
