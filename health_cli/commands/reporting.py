@@ -41,3 +41,4 @@ def report(user: str, report_date: date):
             typer.echo(typer.style("You're on track!", fg=typer.colors.GREEN))
     else:
         typer.echo("No daily goal set. Use 'goal set' to set targets.")
+        

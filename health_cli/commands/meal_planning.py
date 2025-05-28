@@ -63,4 +63,4 @@ def update(id: int, day: Optional[str] = None, meal: Optional[str] = None):
         typer.echo(f"Updated {day} in week {plan.week_number}'s meal plan")
     else:
         typer.echo("Please provide both --day and --meal parameters")
-        raise typer.Exit(code=1)
+        raise typer.Exit(code=1)    

@@ -40,3 +40,4 @@ class MealPlan(Base):
     sunday = Column(String)
     user_id = Column(Integer, ForeignKey('users.id'))
     user = relationship("User", back_populates="meal_plans")
+    
