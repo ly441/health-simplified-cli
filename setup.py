@@ -1,3 +1,5 @@
+
+# setup.py
 from setuptools import setup, find_packages
 
 setup(
@@ -7,5 +9,11 @@ setup(
     install_requires=[
         'typer',
         'sqlalchemy',
+        'python-dotenv',
     ],
+    entry_points={
+        'console_scripts': [
+            'health-cli=health_cli.cli:app',
+        ],
+    },
 )
