@@ -11,6 +11,9 @@ class Goal(Base):
     daily_calories = Column(Integer)
     weekly_calories = Column(Integer)
     user_id = Column(Integer, ForeignKey('users.id'), unique=True)
+    description =Column(String,nullable=False)
+    date = Column(Date,nullable=False)
+    target =Column(Float,nullable=False)
     user = relationship("User", back_populates="goals")
 
 
