@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.sql import func
-from .base import Base
+from database import Base
 
 class FoodEntry(Base):
     __tablename__ = "food_entries"
@@ -13,3 +13,5 @@ class FoodEntry(Base):
 
     def __repr__(self):
         return f"<FoodEntry {self.id}: {self.food_name}>"
+    
+    

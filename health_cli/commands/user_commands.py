@@ -30,3 +30,7 @@ def list():
         
         for user in users:
             typer.echo(f"{user.id}: {user.name} ({user.email})")
+
+
+           
+
