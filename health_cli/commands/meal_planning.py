@@ -2,7 +2,7 @@
 import typer
 from typing import Optional, List
 from sqlalchemy.orm import Session
-from ..models import MealPlan, User
+from health_cli.models import MealPlan, User
 from db.database import get_db
 
 app = typer.Typer(help="Manage your weekly meal plans")

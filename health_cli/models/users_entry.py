@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
-
-from db.database import Base
+from db import Base
 from sqlalchemy.orm import relationship, Session
 
 class User(Base):

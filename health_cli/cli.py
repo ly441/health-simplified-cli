@@ -1,7 +1,7 @@
 
 import typer
 from typing import Optional
-from db.config import config
+from db import config
 from .commands import goals, reporting, meal_planning
 
 app = typer.Typer()
