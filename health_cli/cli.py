@@ -1,9 +1,17 @@
 
 import typer
 from typing import Optional
-from health_cli.db.database import Base
+from sqlalchemy.orm import Session
+from health_cli.db.database import Base,engine
 from health_cli.db.config import config
-from health_cli.commands import goals, reporting, meal_planning,user_commands
+from health_cli.commands.goals import goals
+from health_cli.commands.reporting import reporting
+from health_cli.commands.meal_planning import meal_planning
+from health_cli.commands.user_commands import user_commands
+from health_cli.models.users_entry import User
+
+
+Base.metadata.create_all(bind=engine)
 
 app = typer.Typer()
 
@@ -11,15 +19,15 @@ app = typer.Typer()
 default_user = config.get('cli', 'default_user')
 
 @app.callback()
-def main(ctx: typer.Context, user: Optional[str] = default_user):
-    """Health Simplified CLI - Track your nutrition from the command line"""
-    if user:
-        ctx.obj = {'user': user}
-
-app.add_typer(goals.app, name="goal")
-app.add_typer(reporting.app, name="report")
-app.add_typer(meal_planning.app, name="plan-meal")
-app.add_typer(user_commands.app,name="user")
+def create_user(name: str, email: str):
+    db = Session(engine)
+    try:
+        user = User(name=name, email=email)
+        db.add(user)
+        db.commit()
+        typer.echo(f"Created user: {name}")
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     app()
