@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship,Session
-from db.database import Base
+from health_cli.db.database import Base
 
 
 
