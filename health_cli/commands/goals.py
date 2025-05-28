@@ -2,8 +2,8 @@ import typer
 from typing import Optional
 from datetime import date
 from sqlalchemy.orm import Session
-from ..models import Goal, User
-from ...db.database import get_db
+from health_cli.models import Goal, User
+from db.database import get_db
 
 app = typer.Typer()
 
