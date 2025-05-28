@@ -8,6 +8,7 @@ from health_cli.models.food_entry import FoodEntry
 def init():
     print("Creating database tables...")
     Base.metadata.create_all(bind=engine)
+    print("Tables created:",Base.metadata.tables.keys())
     print("✅ Database initialized.")
 
 if __name__ == "__main__":
