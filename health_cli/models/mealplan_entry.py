@@ -19,7 +19,7 @@ class MealPlan(Base):
     user = relationship("User", back_populates="meal_plans")
     
 
-# CREATE
+
 def create_meal_plan(db: Session, week_number: int, user_id: int, days: dict):
     meal_plan = MealPlan(
         week_number=week_number,

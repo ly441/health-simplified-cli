@@ -1,28 +1,21 @@
 
 import typer
 from sqlalchemy.orm import Session
+from datetime import date
 from health_cli.db.database import SessionLocal
 from health_cli.models.users_entry import User
-from health_cli.commands.goals import Goal
-from health_cli.commands.meal_planning import MealPlan
-from datetime import date
+from health_cli.models.goals_entry import Goal
+from health_cli.models.mealplan_entry import MealPlan
+from health_cli.models.food_entry import FoodEntry
 
 app = typer.Typer()
 
-def main_menu():
-    typer.echo("Welcome to Health Simplified CLI")
-    typer.echo("1. Add User")
-    typer.echo("2. Update User")
-    typer.echo("3. Delete User")
-    typer.echo("4. Add Goal")
-    typer.echo("5. Update Goal")
-    typer.echo("6. Delete Goal")
-    typer.echo("7. Add Meal Plan")
-    typer.echo("8. Update Meal Plan")
-    typer.echo("9. Delete Meal Plan")
-    typer.echo("0. Exit")
-    choice = typer.prompt("Please select an option", type=int)
-    return choice
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.command()
 def cli():
@@ -46,11 +39,29 @@ def cli():
             update_mealplan()
         elif choice == 9:
             delete_mealplan()
+        elif choice == 10:
+            list_user_details()
         elif choice == 0:
             typer.echo("Exiting...")
             break
         else:
             typer.echo("Invalid choice. Please try again.")
+
+def main_menu():
+    typer.echo("Welcome to Health Simplified CLI")
+    typer.echo("1. Add User")
+    typer.echo("2. Update User")
+    typer.echo("3. Delete User")
+    typer.echo("4. Add Goal")
+    typer.echo("5. Update Goal")
+    typer.echo("6. Delete Goal")
+    typer.echo("7. Add Meal Plan")
+    typer.echo("8. Update Meal Plan")
+    typer.echo("9. Delete Meal Plan")
+    typer.echo("10. List User Details")
+    typer.echo("0. Exit")
+    choice = typer.prompt("Please select an option", type=int)
+    return choice
 
 def add_user():
     """Add a new user with prompts"""
@@ -120,7 +131,15 @@ def add_goal():
     """Add a new goal for a user"""
     user_id = typer.prompt("Enter user ID", type=int)
     description = typer.prompt("Enter goal description")
-    target = typer.prompt("Enter goal target", type=float)
+    
+    while True:
+        target = typer.prompt("Enter goal target (numeric value only)")
+        try:
+            target = float(target)
+            break
+        except ValueError:
+            typer.echo("Error: Please enter a valid numeric value for the goal target.")
+
     goal_date = typer.prompt("Enter goal date (YYYY-MM-DD)")
     
     try:
@@ -168,42 +187,6 @@ def update_goal():
     except Exception as e:
         db.rollback()
         typer.echo(f"❌ Failed to update goal: {e}")
-    finally:
-        db.close()
-
-
-
-def add_goal():
-    """Add a new goal for a user"""
-    user_id = typer.prompt("Enter user ID", type=int)
-    description = typer.prompt("Enter goal description")
-    
-    while True:
-        target = typer.prompt("Enter goal target (numeric value only)")
-        try:
-            target = float(target)
-            break
-        except ValueError:
-            typer.echo("Error: Please enter a valid numeric value for the goal target.")
-
-    goal_date = typer.prompt("Enter goal date (YYYY-MM-DD)")
-    
-    try:
-        parsed_date = date.fromisoformat(goal_date)
-    except ValueError:
-        typer.echo("❌ Invalid date format. Use YYYY-MM-DD.")
-        return
-
-    db = SessionLocal()
-    try:
-        goal = Goal(user_id=user_id, description=description, target=target, date=parsed_date)
-        db.add(goal)
-        db.commit()
-        db.refresh(goal)
-        typer.echo(f"🎯 Goal for user {user_id} added on {parsed_date}: {description}")
-    except Exception as e:
-        db.rollback()
-        typer.echo(f"❌ Failed to add goal: {e}")
     finally:
         db.close()
 
@@ -281,5 +264,53 @@ def delete_mealplan():
     finally:
         db.close()
 
+
+
+
+
+def list_user_details():
+    """List all details of a specific user"""
+    user_id = typer.prompt("Enter user ID", type=int)
+
+    db = SessionLocal()
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            typer.echo("❌ User not found.")
+            return
+
+        typer.echo(f"User Details:")
+        typer.echo(f"ID: {user.id}")
+        typer.echo(f"Name: {user.name}")
+        typer.echo(f"Email: {user.email}")
+
+        typer.echo("\nGoals:")
+        if user.goals:
+            goal = user.goals
+            for goal in user.goals:
+                typer.echo(f"  ID: {goal.id}, Description: {goal.description}, Target: {goal.target}, Date: {goal.date}")
+        else:
+            typer.echo("  No goals found.")
+
+        typer.echo("\nMeal Plans:")
+        if user.meal_plans:
+            for mealplan in user.meal_plans:
+                typer.echo(f"  Week: {mealplan.week_number}")
+                for day in ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]:
+                    typer.echo(f"    {day.capitalize()}: {getattr(mealplan, day)}")
+        else:
+            typer.echo("  No meal plans found.")
+
+        typer.echo("\nFood Entries:")
+        if user.food_entries:
+            for entry in user.food_entries:
+                typer.echo(f"  ID: {entry.id}, Food: {entry.food}, Calories: {entry.calories}, Date: {entry.date}")
+        else:
+            typer.echo("  No food entries found.")
+
+    except Exception as e:
+        typer.echo(f"❌ Failed to list user details: {e}")
+    finally:
+        db.close()
 if __name__ == "__main__":
     app()
