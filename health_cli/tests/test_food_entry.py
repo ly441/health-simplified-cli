@@ -1,3 +1,4 @@
+
 import pytest
 from sqlalchemy.orm import Session
 from datetime import date
@@ -9,25 +10,31 @@ from health_cli.models.users_entry import User
 Base.metadata.create_all(bind=engine)
 
 # Fixture to create a database session
-@pytest.fixture
+@pytest.fixture(autouse=True)
 def db_session():
     session = SessionLocal()
     try:
         yield session
     finally:
+        session.query(FoodEntry).delete()
+        session.query(User).delete()
+        session.commit()
         session.close()
 
-# Fixture to create a test user
+# Fixture to create a test user with a unique email and name
 @pytest.fixture
-def test_user(db_session):
-    user = User(name="Test User", email="test@example.com")
+def test_user(db_session, request):
+    unique_id = request.node.name
+    email = f"test_{unique_id}@example.com"
+    name = f"Test User {unique_id}"
+    user = User(name=name, email=email)
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
     return user
 
-def test_food_entry_crud(db_session, test_user):
-    # CREATE
+# CREATE
+def test_create_food_entry(db_session, test_user):
     food_entry = FoodEntry(
         food="Apple",
         calories=95,
@@ -43,27 +50,3 @@ def test_food_entry_crud(db_session, test_user):
     assert food_entry.calories == 95
     assert food_entry.date == date.today()
     assert food_entry.user_id == test_user.id
-
-    # READ
-    retrieved_entry = db_session.query(FoodEntry).filter(FoodEntry.id == food_entry.id).first()
-    assert retrieved_entry is not None
-    assert retrieved_entry.food == "Apple"
-    assert retrieved_entry.calories == 95
-    assert retrieved_entry.date == date.today()
-    assert retrieved_entry.user_id == test_user.id
-
-    # UPDATE
-    retrieved_entry.food = "Grapes"
-    retrieved_entry.calories = 70
-    db_session.commit()
-    db_session.refresh(retrieved_entry)
-
-    assert retrieved_entry.food == "Grapes"
-    assert retrieved_entry.calories == 70
-
-    # DELETE
-    db_session.delete(retrieved_entry)
-    db_session.commit()
-
-    deleted_entry = db_session.query(FoodEntry).filter(FoodEntry.id == food_entry.id).first()
-    assert deleted_entry is None

@@ -1,24 +1,32 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from health_cli.db.database import Base
 from sqlalchemy.orm import relationship, Session
+from sqlalchemy.exc import  IntegrityError
+
 
 class User(Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
-    email =Column(String,unique=True,nullable=False)
+    email = Column(String, unique=True, nullable=False)
     food_entries = relationship("FoodEntry", back_populates="user")
     goals = relationship("Goal", back_populates="user", uselist=False)
     meal_plans = relationship("MealPlan", back_populates="user")
 
 
+
+
 # CREATE
-def create_user(db: Session, name: str,email:str):
-    user = User(name=name,email=email)
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    return user
+def create_user(db: Session, name: str, email: str):
+    try:
+        user = User(name=name, email=email)
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        return user
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("User with this name or email already exists")
 
 # READ
 def get_user_by_id(db: Session, user_id: int):
@@ -34,9 +42,13 @@ def get_all_users(db: Session):
 def update_user_name(db: Session, user_id: int, new_name: str):
     user = db.query(User).filter(User.id == user_id).first()
     if user:
-        user.name = new_name
-        db.commit()
-        db.refresh(user)
+        try:
+            user.name = new_name
+            db.commit()
+            db.refresh(user)
+        except IntegrityError:
+            db.rollback()
+            raise ValueError("User with this name already exists")
     return user
 
 # DELETE
