@@ -4,15 +4,10 @@ from sqlalchemy.orm import Session
 from datetime import date
 from health_cli.db.database import Base, engine, SessionLocal
 from health_cli.models.goals_entry import Goal
-    
+from health_cli.models.users_entry import User
 from health_cli.models.goals_entry import (
     create_goal,
-    get_goal_by_user_id,
-    get_goal_by_id,
-    update_goal,
-    delete_goal,
 )
-from health_cli.models.users_entry import User
 
 # Create all tables
 Base.metadata.create_all(bind=engine)
