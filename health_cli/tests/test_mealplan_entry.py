@@ -22,7 +22,14 @@ def db_session():
     try:
         yield session
     finally:
+        from health_cli.models.mealplan_entry import MealPlan
+        from health_cli.models.users_entry import User
+
+        session.query(MealPlan).delete()
+        session.query(User).delete()
+        session.commit()
         session.close()
+
 
 # Fixture to create a test user
 @pytest.fixture

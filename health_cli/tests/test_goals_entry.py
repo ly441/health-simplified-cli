@@ -3,16 +3,17 @@ import pytest
 from sqlalchemy.orm import Session
 from datetime import date
 from health_cli.db.database import Base, engine, SessionLocal
-from health_cli.models.goals_entry import Goal
+from health_cli.models.goals_entry import Goal, create_goal
 from health_cli.models.users_entry import User
-from health_cli.models.goals_entry import (
-    create_goal,
-)
 
-# Create all tables
-Base.metadata.create_all(bind=engine)
+# Automatically create tables for test session
+@pytest.fixture(scope="session", autouse=True)
+def create_tables():
+    Base.metadata.create_all(bind=engine)
+    yield
+    Base.metadata.drop_all(bind=engine)
 
-# Fixture to create a database session
+# Database session per test
 @pytest.fixture(autouse=True)
 def db_session():
     session = SessionLocal()
@@ -24,19 +25,17 @@ def db_session():
         session.commit()
         session.close()
 
-# Fixture to create a test user with a unique email and name
+# Fixture to create a unique test user
 @pytest.fixture
 def test_user(db_session, request):
-    unique_id = request.node.name
-    email = f"test_{unique_id}@example.com"
-    name = f"Test User {unique_id}"
-    user = User(name=name, email=email)
+    unique_id = request.node.name.replace("[", "_").replace("]", "_")  # Pytest param-safe
+    user = User(name=f"Test User {unique_id}", email=f"user_{unique_id}@example.com")
     db_session.add(user)
     db_session.commit()
     db_session.refresh(user)
     return user
 
-# CREATE
+# Test: create goal
 def test_create_goal(db_session, test_user):
     goal = create_goal(
         db=db_session,

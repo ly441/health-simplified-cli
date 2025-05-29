@@ -2,6 +2,8 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship,Session
 from health_cli.db.database import Base
+from datetime import date
+
 from sqlalchemy.exc import IntegrityError
 
 
