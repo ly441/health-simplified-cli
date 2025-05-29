@@ -6,8 +6,8 @@ from health_cli.db.database import Base, engine, SessionLocal
 from health_cli.models.food_entry import FoodEntry
 from health_cli.models.users_entry import User
 
-# Create all tables
-Base.metadata.create_all(bind=engine)
+
+
 
 # Fixture to create a database session
 @pytest.fixture(autouse=True)
