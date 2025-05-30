@@ -2,7 +2,7 @@
 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship,Session
-from db.database import Base
+from health_cli.db.database import Base
 
 class MealPlan(Base):
     __tablename__ = 'meal_plans'
@@ -19,7 +19,7 @@ class MealPlan(Base):
     user = relationship("User", back_populates="meal_plans")
     
 
-# CREATE
+
 def create_meal_plan(db: Session, week_number: int, user_id: int, days: dict):
     meal_plan = MealPlan(
         week_number=week_number,

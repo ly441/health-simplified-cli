@@ -3,6 +3,7 @@ pyproject.toml
 setup.py
 health_cli/__init__.py
 health_cli/cli.py
+health_cli/init_db.py
 health_cli.egg-info/PKG-INFO
 health_cli.egg-info/SOURCES.txt
 health_cli.egg-info/dependency_links.txt
@@ -14,5 +15,11 @@ health_cli/commands/goals.py
 health_cli/commands/meal_planning.py
 health_cli/commands/reporting.py
 health_cli/commands/user_commands.py
+health_cli/db/__init__.py
+health_cli/db/config.py
+health_cli/db/database.py
 health_cli/models/__init__.py
+health_cli/models/food_entry.py
+health_cli/models/goals_entry.py
+health_cli/models/mealplan_entry.py
 health_cli/models/users_entry.py
