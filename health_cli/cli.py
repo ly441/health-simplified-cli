@@ -2,7 +2,7 @@
 import typer
 from sqlalchemy.orm import Session
 from datetime import date
-from health_cli.db.database import SessionLocal
+from db.database import SessionLocal
 from health_cli.models.users_entry import User
 from health_cli.models.goals_entry import Goal
 from health_cli.models.mealplan_entry import MealPlan
