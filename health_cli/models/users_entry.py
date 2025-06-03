@@ -1,8 +1,8 @@
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from health_cli.db.database import Base
 from sqlalchemy.orm import relationship, Session
-from sqlalchemy.exc import  IntegrityError
 
+from sqlalchemy.exc import  IntegrityError
 
 class User(Base):
     __tablename__ = 'users'

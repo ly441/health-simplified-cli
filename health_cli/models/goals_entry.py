@@ -7,7 +7,6 @@ from datetime import date
 from sqlalchemy.exc import IntegrityError
 
 
-
 class Goal(Base):
     __tablename__ = 'goals'
     id = Column(Integer, primary_key=True)
