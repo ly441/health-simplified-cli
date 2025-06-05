@@ -1,7 +1,10 @@
 
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float
 from sqlalchemy.orm import relationship,Session
-from db.database import Base
+from health_cli.db.database import Base
+from datetime import date
+
+from sqlalchemy.exc import IntegrityError
 
 
 
@@ -11,20 +14,32 @@ class Goal(Base):
     daily_calories = Column(Integer)
     weekly_calories = Column(Integer)
     user_id = Column(Integer, ForeignKey('users.id'), unique=True)
+    description = Column(String, nullable=False)
+    date = Column(Date, nullable=False)
+    target = Column(Float, nullable=False)
     user = relationship("User", back_populates="goals")
 
 
+
+
 # CREATE
-def create_goal(db: Session, user_id: int, daily_calories: int, weekly_calories: int):
-    goal = Goal(
-        user_id=user_id,
-        daily_calories=daily_calories,
-        weekly_calories=weekly_calories
-    )
-    db.add(goal)
-    db.commit()
-    db.refresh(goal)
-    return goal
+def create_goal(db: Session, user_id: int, daily_calories: int, weekly_calories: int, description: str, target: float, date: date):
+    try:
+        goal = Goal(
+            user_id=user_id,
+            daily_calories=daily_calories,
+            weekly_calories=weekly_calories,
+            description=description,
+            target=target,
+            date=date
+        )
+        db.add(goal)
+        db.commit()
+        db.refresh(goal)
+        return goal
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("Goal with this user_id already exists")
 
 # READ
 def get_goal_by_user_id(db: Session, user_id: int):
