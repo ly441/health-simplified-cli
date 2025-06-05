@@ -9,6 +9,7 @@ from health_cli.models.users_entry import User
 # Automatically create tables for test session
 @pytest.fixture(scope="session", autouse=True)
 def create_tables():
+    Base.metadata.drop_all(bind=engine)  
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
