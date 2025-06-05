@@ -31,6 +31,15 @@ def list():
         for user in users:
             typer.echo(f"{user.id}: {user.name} ({user.email})")
 
+@app.command()
+def debug_users():
+    db = SessionLocal()
+    try:
+        users = db.query(User).all()
+        for user in users:
+            print(user.id, user.name, user.email)
+    finally:
+        db.close()
 
            
 
